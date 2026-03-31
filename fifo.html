@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FIFO</title>
+    <style>
+        body {
+            background: white
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+
+        h1 {
+            color: #131D4F;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 2px solid #0B1D51;
+            border-radius: 20px;
+
+        }
+
+        .input-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+
+        label {
+            font-weight: bold;
+            color: #131D4F;
+            font-family: 'Arial', sans-serif;
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 8px;
+            border: 2px solid #0B1D51;
+            border-radius: 8px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #142ebd;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #051b2f;
+        }
+
+        .exit-btn {
+            background-color: #142ebd;
+            margin-top: 20px;
+        }
+
+        .exit-btn:hover {
+            background-color: #051b2f;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin-top: 20px;
+            width: 80%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        th, td {
+            border: 2px solid #4014b7;
+            padding: 10px;
+            font-size: 18px;
+        }
+
+        th {
+            background-color: #241ab7;
+            color: white;
+        }
+
+        td {
+            background-color: #c7c6f2;
+            color: black;
+        }
+
+        .summary {
+            background-color: #142ebd;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>First In First Out (FIFO)</h1>
+
+    <div class="input-container">
+        <label>Reference String:
+            <input type="text" id="refString" placeholder="e.g. 1,2,3,4,1,2,5,1,2,3">
+        </label>
+
+        <label>Frames:
+            <input type="number" id="frames" min="1" max="10" placeholder="e.g. 4">
+        </label>
+
+        <button onclick="runFIFO()">Run FIFO</button>
+    </div>
+
+    <table id="resultTable"></table>
+
+    <div class="summary" id="summary">
+        <div>Page Hits: 0</div>
+        <div>Page Faults: 0</div>
+    </div>
+
+    <button class="exit-btn" onclick="window.location.href= 'pagereplacemet_index.html'">Exit</button>
+
+    <script>
+        function runFIFO() {
+            const input = document.getElementById("refString").value.trim();
+            const frameCount = parseInt(document.getElementById("frames").value);
+            const table = document.getElementById("resultTable");
+            const summary = document.getElementById("summary");
+
+            if (!input || isNaN(frameCount) || frameCount <= 0) {
+                alert("Please enter a valid reference string and number of frames.");
+                return;
+            }
+
+            const referenceString = input.split(",").map(num => num.trim());
+            let frames = [];
+            let hits = 0;
+            let faults = 0;
+            let tableHTML = "<tr><th>Step</th>";
+
+            // Header
+            for (let i = 0; i < frameCount; i++) {
+                tableHTML += `<th>Frame ${i + 1}</th>`;
+            }
+            tableHTML += "<th>Hit/Fault</th></tr>";
+
+            // FIFO Logic
+            for (let step = 0; step < referenceString.length; step++) {
+                const page = referenceString[step];
+                let status = "";
+
+                if (frames.includes(page)) {
+                    hits++;
+                    status = "Hit";
+                } else {
+                    faults++;
+                    if (frames.length < frameCount) {
+                        frames.push(page);
+                    } else {
+                        frames.shift();
+                        frames.push(page);
+                    }
+                    status = "Fault";
+                }
+
+                tableHTML += `<tr><td>${page}</td>`;
+                for (let i = 0; i < frameCount; i++) {
+                    tableHTML += `<td>${frames[i] !== undefined ? frames[i] : ""}</td>`;
+                }
+
+                tableHTML += `<td style="font-weight:bold; color:${status === "Hit" ? "green" : "red"};">${status}</td></tr>`;
+            }
+
+            table.innerHTML = tableHTML;
+            summary.innerHTML = `
+                <div>Page Hits: <span style="color:lightgreen; font-weight:bold;">${hits}</span></div>
+                <div>Page Faults: <span style="color:#ff8080; font-weight:bold;">${faults}</span></div>
+            `;
+        }
+    </script>
+</body>
+</html>
